@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+{% block body %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 mx-md-auto pt-5">
+            <h1>Authentication timeline</h1>
+            <p class="text-muted">State migrations for {{ current_user.display_name() }}, newest first.</p>
+            <table class="table table-sm table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">When (UTC)</th>
+                        <th scope="col">Transition</th>
+                        <th scope="col">Detail</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for event in events %}
+                    <tr>
+                        <th scope="row">{{ loop.index }}</th>
+                        <td>{{ event.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        <td>{{ event.label }}</td>
+                        <td class="text-muted">{{ event.detail }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4">No authentication events recorded yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <p><a class="btn btn-secondary" href="{{ url_for('profile') }}">Back to profile</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

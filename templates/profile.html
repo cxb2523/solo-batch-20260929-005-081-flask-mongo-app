@@ -5,6 +5,7 @@
         <div class="col-lg-8">
 
             <h1 class="mb-3">Welcome {{current_user.first_name + " " + current_user.last_name}}</h1>
+            <p><a class="btn btn-outline-secondary btn-sm" href="{{ url_for('auth.auth_timeline') }}">View authentication timeline</a></p>
 
             <div class="table-responsive">
                 <h2 class="my-3 text-muted">Your details</h2>
@@ -141,3 +142,4 @@
 
 </div>
 {% endblock %}
+

@@ -1,25 +1,18 @@
-from itsdangerous import URLSafeTimedSerializer
-import configparser
+"""Backwards-compatible shim.
 
-# Configuration
-config = configparser.ConfigParser()
-config.read('configuration.ini')
-default = config['DEFAULT']
-SECRET_KEY = default['SECRET_KEY']
-SECURITY_PASSWORD_SALT = default['SECURITY_PASSWORD_SALT']
+Token logic now lives in ``auth.tokens`` and is bound to ``user_id`` and
+``expires`` rather than a bare email. These helpers re-export the new
+functions for any code still importing the old module paths.
+"""
 
-def generate_confirmation_token(email):
-    serializer = URLSafeTimedSerializer(SECRET_KEY)
-    return serializer.dumps(email, salt=SECURITY_PASSWORD_SALT)
+from auth.tokens import (
+    DEFAULT_EXPIRY_SECONDS,
+    consume_token as confirm_token,
+    issue_token as generate_confirmation_token,
+)
 
-def confirm_token(token, expiration=3600):
-    serializer = URLSafeTimedSerializer(SECRET_KEY)
-    try:
-        email = serializer.loads(
-            token,
-            salt=SECURITY_PASSWORD_SALT,
-            max_age=expiration
-        )
-    except:
-        return False
-    return email
+__all__ = [
+    "generate_confirmation_token",
+    "confirm_token",
+    "DEFAULT_EXPIRY_SECONDS",
+]
