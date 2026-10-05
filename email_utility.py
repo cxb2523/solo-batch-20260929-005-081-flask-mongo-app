@@ -1,24 +1,13 @@
 from flask import url_for, render_template
 import smtplib
 import ssl
-import configparser
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from verification import generate_confirmation_token
 import os
 
 
 # Common email sending function
 def send_email(receiver_email, subject, plaintext, html):
-
-    # Connection configuration
-    # config = configparser.ConfigParser()
-    # config.read('configuration.ini')
-    # email_config = config['EMAIL']
-    # SMTP_SERVER = email_config['SMTP_SERVER']
-    # PORT = 587  # For starttls
-    # SENDER_EMAIL = email_config['SENDER_EMAIL']
-    # PASSWORD = email_config['PASSWORD']
 
     SMTP_SERVER = os.environ.get('SMTP_SERVER')
     PORT = os.environ.get('EMAIL_PORT')
@@ -31,7 +20,7 @@ def send_email(receiver_email, subject, plaintext, html):
     message["From"] = SENDER_EMAIL
     message["To"] = receiver_email
 
-    # Turn text into plain or HTML MIMEText objects
+    # Turn text into plain and HTML MIMEText objects
     part1 = MIMEText(plaintext, "plain")
     part2 = MIMEText(html, "html")
 
@@ -44,6 +33,7 @@ def send_email(receiver_email, subject, plaintext, html):
     context = ssl.create_default_context()
 
     # Try to log in to server and send email
+    server = None
     try:
         server = smtplib.SMTP(SMTP_SERVER, PORT)
         server.ehlo()
@@ -51,18 +41,23 @@ def send_email(receiver_email, subject, plaintext, html):
         server.ehlo()
         server.login(SENDER_EMAIL, PASSWORD)
         server.send_message(message)
+        return True
     except Exception as e:
         # Print error messages to stdout
         print(e)
         return False
     finally:
-        server.quit()
-        return True
+        if server is not None:
+            try:
+                server.quit()
+            except Exception:
+                pass
 
 
 # Convenience function - registration / verification email
-def send_registration_email(user):
-    token = generate_confirmation_token(user.email)
+# The token is issued (and stored) by the auth guard; it binds the user id
+# and an expiry, and any previously sent token is already invalidated.
+def send_registration_email(user, token):
     confirm_url = url_for('confirm_email', token=token, _external=True)
     subject = "Registration successful - Please verify your email address."
     plaintext = f"Welcome {user.display_name()}.\nPlease verify your email address by following this link:\n\n{confirm_url}"
